@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOTUS</title>
+<style>
+:root {
+  --red:    #c0392b;
+  --red2:   #a93226;
+  --yellow: #f39c12;
+  --grey:   #95a5a6;
+  --dark:   #2c3e50;
+  --bg:     #f0f2f5;
+  --card:   #ffffff;
+  --border: #dde1e7;
+  --green:  #27ae60;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--dark);
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+header {
+  background: var(--red);
+  color: white;
+  padding: 0 32px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 3px 12px rgba(0,0,0,.25);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+header h1 {
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: 8px;
+}
+.header-right {
+  font-size: .85rem;
+  font-weight: 600;
+  opacity: .9;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ── Layout ── */
+.container {
+  max-width: 980px;
+  margin: 28px auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 22px;
+  align-items: start;
+}
+.left-col { display: flex; flex-direction: column; gap: 22px; }
+
+/* ── Card ── */
+.card {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 0 2px 16px rgba(0,0,0,.07);
+}
+.card-title {
+  font-size: .75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: var(--red);
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ── Forms ── */
+.form-group { margin-bottom: 12px; }
+label {
+  display: block;
+  font-size: .73rem;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+}
+input, select {
+  width: 100%;
+  padding: 10px 13px;
+  border: 2px solid var(--border);
+  border-radius: 9px;
+  font-size: .95rem;
+  outline: none;
+  transition: border-color .2s;
+  color: var(--dark);
+  background: white;
+}
+input:focus, select:focus { border-color: var(--red); }
+
+/* ── Buttons ── */
+.btn {
+  padding: 11px 16px;
+  border: none;
+  border-radius: 9px;
+  font-size: .9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  letter-spacing: .5px;
+}
+.btn-primary   { background: var(--red); color: white; width: 100%; }
+.btn-primary:hover { background: var(--red2); }
+.btn-secondary { background: var(--bg); color: var(--dark); }
+.btn-secondary:hover { background: #dde1e7; }
+.btn-sm { padding: 7px 13px; font-size: .8rem; width: auto; }
+.btn-green { background: var(--green); color: white; }
+.btn-green:hover { background: #229954; }
+
+/* ── Tabs ── */
+.tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+.tab {
+  flex: 1; text-align: center;
+  padding: 8px 0;
+  border: 2px solid var(--border);
+  border-radius: 9px;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  color: #888;
+}
+.tab.active { background: var(--red); color: white; border-color: var(--red); }
+
+/* ── Player badge ── */
+.player-badge {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg);
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+.avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--red);
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.badge-info { line-height: 1.4; }
+.badge-name { font-weight: 700; font-size: .95rem; }
+.badge-sub  { font-size: .75rem; color: #999; }
+
+/* ── Status ── */
+.status {
+  padding: 10px 14px;
+  border-radius: 9px;
+  font-size: .87rem;
+  font-weight: 600;
+  margin-top: 12px;
+  text-align: center;
+}
+.status.info    { background: #eaf4fb; color: #2980b9; }
+.status.success { background: #eafaf1; color: #27ae60; }
+.status.error   { background: #fdedec; color: #c0392b; }
+.status.warning { background: #fef9e7; color: #d68910; }
+.hidden { display: none !important; }
+
+/* ── Divider ── */
+hr { border: none; border-top: 2px solid var(--bg); margin: 16px 0; }
+
+/* ── Game header ── */
+.game-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 14px;
+}
+.game-info { font-size: .85rem; color: #888; }
+.game-info strong { color: var(--dark); font-size: .95rem; }
+
+/* ── Hint ── */
+.hint {
+  font-size: .85rem; color: #888;
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hint-letter {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px;
+  background: var(--red); color: white;
+  font-weight: 900; font-size: 1.15rem;
+  border-radius: 7px;
+}
+
+/* ── Board ── */
+.board { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+.board-row { display: flex; gap: 7px; }
+.tile {
+  width: 54px; height: 54px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; font-weight: 900;
+  border-radius: 8px;
+  border: 2.5px solid var(--border);
+  background: white;
+  color: var(--dark);
+  text-transform: uppercase;
+  transition: background .25s, border-color .25s, color .25s;
+  user-select: none;
+}
+.tile.bien-placee { background: var(--red);    border-color: var(--red);    color: white; }
+.tile.mal-placee  { background: var(--yellow); border-color: var(--yellow); color: white; }
+.tile.absente     { background: var(--grey);   border-color: var(--grey);   color: white; }
+.tile.current-row { border-color: #b0b8c8; }
+
+/* ── Input area ── */
+.input-area { display: flex; gap: 8px; }
+.input-area input {
+  flex: 1;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* ── Empty state ── */
+.empty-state {
+  text-align: center;
+  padding: 50px 20px;
+  color: #bbb;
+}
+.empty-state .emoji { font-size: 3.5rem; margin-bottom: 14px; }
+.empty-state p { font-weight: 600; font-size: .95rem; }
+.empty-state small { font-size: .8rem; margin-top: 6px; display: block; }
+
+/* ── Leaderboard ── */
+.lb-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: var(--bg);
+  margin-bottom: 8px;
+}
+.lb-rank { font-weight: 900; font-size: 1.1rem; width: 28px; text-align: center; }
+.lb-info { flex: 1; }
+.lb-name { font-weight: 700; font-size: .9rem; }
+.lb-sub  { font-size: .76rem; color: #999; margin-top: 1px; }
+.lb-rate { font-weight: 900; font-size: 1rem; }
+
+/* ── Legend ── */
+.legend { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.legend-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .76rem; color: #666;
+}
+.legend-dot {
+  width: 16px; height: 16px;
+  border-radius: 4px;
+}
+
+@media (max-width: 720px) {
+  .container { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>MOTUS</h1>
+  <div class="header-right">
+    <span id="header-player" class="hidden"></span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ═══ COLONNE GAUCHE ═══ -->
+  <div class="left-col">
+
+    <!-- Joueur -->
+    <div class="card" id="auth-card">
+      <div class="card-title">Joueur</div>
+
+      <div class="tabs" id="auth-tabs">
+        <div class="tab active" onclick="showTab('connexion')">Connexion</div>
+        <div class="tab"        onclick="showTab('inscription')">Inscription</div>
+      </div>
+
+      <!-- Connexion -->
+      <div id="connexion-form">
+        <div class="form-group">
+          <label>Pseudonyme ou ID</label>
+          <input id="login-val" type="text" placeholder="Ex : Maxance" onkeydown="if(event.key==='Enter')login()">
+        </div>
+        <button class="btn btn-primary" onclick="login()">Jouer →</button>
+      </div>
+
+      <!-- Inscription -->
+      <div id="inscription-form" class="hidden">
+        <div class="form-group">
+          <label>Pseudonyme</label>
+          <input id="reg-pseudo" type="text" placeholder="Maxance">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input id="reg-email" type="email" placeholder="max@motus.fr">
+        </div>
+        <div class="form-group">
+          <label>Mot de passe</label>
+          <input id="reg-mdp" type="password" placeholder="••••••••">
+        </div>
+        <button class="btn btn-primary" onclick="register()">Créer mon compte</button>
+      </div>
+
+      <div id="auth-msg"></div>
+
+      <!-- Connecté -->
+      <div id="logged-view" class="hidden">
+        <div class="player-badge">
+          <div class="avatar" id="av-letter">?</div>
+          <div class="badge-info">
+            <div class="badge-name" id="av-name">—</div>
+            <div class="badge-sub"  id="av-id">ID : —</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="logout()">Changer de joueur</button>
+      </div>
+    </div>
+
+    <!-- Classement -->
+    <div class="card">
+      <div class="card-title">
+        Classement
+        <button class="btn btn-secondary btn-sm" onclick="loadClassement()">↻ Actualiser</button>
+      </div>
+      <div id="classement-content">
+        <div style="text-align:center;color:#bbb;padding:24px;font-size:.85rem;">Joue une partie pour apparaître ici !</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ COLONNE DROITE : JEU ═══ -->
+  <div class="card">
+    <div class="card-title">Partie</div>
+
+    <!-- Lancer une partie -->
+    <div id="new-game-bar" style="display:flex;gap:10px;align-items:flex-end;margin-bottom:18px;">
+      <div class="form-group" style="flex:1;margin:0;">
+        <label>Longueur du mot</label>
+        <select id="word-len">
+          <option value="5">5 lettres</option>
+          <option value="6" selected>6 lettres (défaut)</option>
+          <option value="7">7 lettres</option>
+        </select>
+      </div>
+      <button class="btn btn-green btn-sm" style="height:42px;" onclick="newGame()">▶ Nouvelle partie</button>
+    </div>
+
+    <hr>
+
+    <!-- Aucune partie -->
+    <div id="empty-game" class="empty-state">
+      <div class="emoji">🎯</div>
+      <p>Lance une nouvelle partie !</p>
+      <small>Connecte-toi et appuie sur "Nouvelle partie".</small>
+    </div>
+
+    <!-- Partie en cours -->
+    <div id="game-view" class="hidden">
+
+      <div class="game-meta">
+        <div>
+          <span class="game-info">Partie <strong>#<span id="gid">—</span></strong></span>
+          &nbsp;·&nbsp;
+          <span class="game-info">Essai <strong><span id="essai-cur">0</span> / <span id="essai-max">6</span></strong></span>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="resetGame()">✕ Abandonner</button>
+      </div>
+
+      <!-- Indice première lettre -->
+      <div class="hint">
+        <span>Première lettre :</span>
+        <span class="hint-letter" id="first-letter">?</span>
+        <span id="word-len-hint" style="color:#bbb;font-size:.8rem;"></span>
+      </div>
+
+      <!-- Grille -->
+      <div class="board" id="board"></div>
+
+      <!-- Saisie -->
+      <div id="input-zone">
+        <div class="input-area">
+          <input id="word-input"
+                 type="text"
+                 placeholder="Tape ton mot…"
+                 autocomplete="off"
+                 onkeydown="if(event.key==='Enter')valider()">
+          <button class="btn btn-primary btn-sm" onclick="valider()">Valider</button>
+        </div>
+      </div>
+
+      <div id="game-msg"></div>
+
+      <!-- Légende -->
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Bien placée</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>Mal placée</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--grey)"></div>Absente</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── Config ──────────────────────────────────────────
+const API = {
+  joueurs:      'http://localhost:8081',
+  dictionnaire: 'http://localhost:8082',
+  parties:      'http://localhost:8083',
+  stats:        'http://localhost:8084'
+};
+
+// ── State ────────────────────────────────────────────
+let joueur  = null;
+let partie  = null;
+let longueur = 6;
+
+// ── Tabs Auth ────────────────────────────────────────
+function showTab(name) {
+  document.getElementById('connexion-form').classList.toggle('hidden', name !== 'connexion');
+  document.getElementById('inscription-form').classList.toggle('hidden', name !== 'inscription');
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', (name === 'connexion' && i === 0) || (name === 'inscription' && i === 1));
+  });
+  clearMsg('auth-msg');
+}
+
+// ── Messages ─────────────────────────────────────────
+function msg(id, text, type) {
+  const el = document.getElementById(id);
+  el.className = 'status ' + type;
+  el.textContent = text;
+}
+function clearMsg(id) {
+  const el = document.getElementById(id);
+  el.className = 'hidden';
+  el.textContent = '';
+}
+
+// ── Auth ─────────────────────────────────────────────
+async function login() {
+  const val = document.getElementById('login-val').value.trim();
+  if (!val) return msg('auth-msg', 'Saisis ton pseudo ou ton ID.', 'error');
+  try {
+    let j;
+    if (/^\d+$/.test(val)) {
+      const r = await fetch(`${API.joueurs}/joueurs/${val}`);
+      if (!r.ok) throw new Error('Joueur introuvable.');
+      j = await r.json();
+    } else {
+      const r = await fetch(`${API.joueurs}/joueurs`);
+      const all = await r.json();
+      j = all.find(x => x.pseudonyme.toLowerCase() === val.toLowerCase());
+      if (!j) throw new Error('Pseudo introuvable. Inscris-toi !');
+    }
+    setJoueur(j);
+  } catch(e) { msg('auth-msg', e.message, 'error'); }
+}
+
+async function register() {
+  const pseudo = document.getElementById('reg-pseudo').value.trim();
+  const email  = document.getElementById('reg-email').value.trim();
+  const mdp    = document.getElementById('reg-mdp').value.trim();
+  if (!pseudo || !email || !mdp) return msg('auth-msg', 'Remplis tous les champs.', 'error');
+  try {
+    const r = await fetch(`${API.joueurs}/joueurs`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({pseudonyme: pseudo, email, motDePasse: mdp})
+    });
+    if (!r.ok) throw new Error('Email déjà utilisé ou données invalides.');
+    const j = await r.json();
+    setJoueur(j);
+    msg('auth-msg', 'Compte créé ! Bienvenue ' + j.pseudonyme + ' 🎉', 'success');
+  } catch(e) { msg('auth-msg', e.message, 'error'); }
+}
+
+function setJoueur(j) {
+  joueur = j;
+  document.getElementById('av-letter').textContent = j.pseudonyme[0].toUpperCase();
+  document.getElementById('av-name').textContent   = j.pseudonyme;
+  document.getElementById('av-id').textContent     = 'ID : ' + j.id;
+  document.getElementById('auth-tabs').classList.add('hidden');
+  document.getElementById('connexion-form').classList.add('hidden');
+  document.getElementById('inscription-form').classList.add('hidden');
+  document.getElementById('logged-view').classList.remove('hidden');
+  document.getElementById('header-player').textContent = '👤 ' + j.pseudonyme;
+  document.getElementById('header-player').classList.remove('hidden');
+  clearMsg('auth-msg');
+  loadClassement();
+}
+
+function logout() {
+  joueur  = null;
+  partie  = null;
+  document.getElementById('logged-view').classList.add('hidden');
+  document.getElementById('auth-tabs').classList.remove('hidden');
+  document.getElementById('connexion-form').classList.remove('hidden');
+  document.getElementById('header-player').classList.add('hidden');
+  showEmptyGame();
+}
+
+// ── Nouvelle partie ───────────────────────────────────
+async function newGame() {
+  if (!joueur) return msg('game-msg', 'Connecte-toi d\'abord !', 'error');
+  longueur = parseInt(document.getElementById('word-len').value);
+  try {
+    const r = await fetch(`${API.parties}/parties`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({joueurId: joueur.id, longueurMot: longueur})
+    });
+    if (!r.ok) throw new Error('Impossible de créer la partie (dictionnaire-service actif ?)');
+    partie = await r.json();
+    startGame();
+  } catch(e) { alert('Erreur : ' + e.message); }
+}
+
+function startGame() {
+  document.getElementById('empty-game').classList.add('hidden');
+  document.getElementById('game-view').classList.remove('hidden');
+  document.getElementById('input-zone').classList.remove('hidden');
+  document.getElementById('gid').textContent       = partie.id;
+  document.getElementById('essai-cur').textContent  = '0';
+  document.getElementById('essai-max').textContent  = partie.nombreEssaisMax || 6;
+  document.getElementById('word-len-hint').textContent = '(' + longueur + ' lettres)';
+  document.getElementById('word-input').maxLength = longueur;
+  document.getElementById('word-input').value = '';
+  clearMsg('game-msg');
+  buildBoard(longueur, partie.nombreEssaisMax || 6);
+  fetchPremiereLettre();
+}
+
+async function fetchPremiereLettre() {
+  try {
+    const r = await fetch(`${API.parties}/parties/${partie.id}/premiere-lettre`);
+    const d = await r.json();
+    document.getElementById('first-letter').textContent = d.lettre;
+  } catch(_) {}
+}
+
+function buildBoard(len, rows) {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  for (let i = 0; i < rows; i++) {
+    const row = document.createElement('div');
+    row.className = 'board-row';
+    row.id = 'row-' + i;
+    for (let j = 0; j < len; j++) {
+      const t = document.createElement('div');
+      t.className = 'tile';
+      t.id = `t-${i}-${j}`;
+      row.appendChild(t);
+    }
+    board.appendChild(row);
+  }
+}
+
+function renderTentative(index, tentative) {
+  tentative.resultats.forEach(r => {
+    const t = document.getElementById(`t-${index}-${r.position}`);
+    if (!t) return;
+    t.textContent = r.lettre;
+    t.classList.remove('bien-placee','mal-placee','absente');
+    if (r.etat === 'BIEN_PLACEE') t.classList.add('bien-placee');
+    else if (r.etat === 'MAL_PLACEE') t.classList.add('mal-placee');
+    else t.classList.add('absente');
+  });
+}
+
+// ── Soumettre mot ─────────────────────────────────────
+async function valider() {
+  const mot = document.getElementById('word-input').value.trim().toUpperCase();
+  if (!mot) return;
+  if (mot.length !== longueur) {
+    return msg('game-msg', `Le mot doit faire exactement ${longueur} lettres.`, 'error');
+  }
+
+  clearMsg('game-msg');
+
+  try {
+    const r = await fetch(`${API.parties}/parties/${partie.id}/tentatives`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({mot})
+    });
+
+    if (!r.ok) {
+      try {
+        const errJson = await r.json();
+        const errMsg = errJson.error || errJson.message || 'Erreur serveur.';
+        const m = errMsg.toLowerCase().includes('invalide') || errMsg.toLowerCase().includes('dictionnaire')
+          ? `"${mot}" n'est pas dans le dictionnaire.`
+          : errMsg;
+        return msg('game-msg', m, 'error');
+      } catch(_) {
+        return msg('game-msg', 'Erreur serveur. Réessaie.', 'error');
+      }
+    }
+
+    const tentative = await r.json();
+    renderTentative(tentative.numero - 1, tentative);
+    document.getElementById('word-input').value = '';
+    document.getElementById('essai-cur').textContent = tentative.numero;
+
+    // Récupérer la partie mise à jour
+    const pr = await fetch(`${API.parties}/parties/${partie.id}`);
+    partie = await pr.json();
+
+    if (partie.statut === 'GAGNEE') {
+      document.getElementById('input-zone').classList.add('hidden');
+      msg('game-msg', `🎉 Bravo ! Trouvé en ${tentative.numero} essai(s) !`, 'success');
+      loadClassement();
+    } else if (partie.statut === 'PERDUE') {
+      document.getElementById('input-zone').classList.add('hidden');
+      const solution = partie.motMystere ? ` C'était : ${partie.motMystere}` : '';
+      msg('game-msg', `😞 Perdu !${solution}`, 'error');
+      loadClassement();
+    }
+
+  } catch(e) {
+    msg('game-msg', 'Erreur réseau : ' + e.message, 'error');
+  }
+}
+
+function resetGame() {
+  partie = null;
+  showEmptyGame();
+}
+
+function showEmptyGame() {
+  document.getElementById('game-view').classList.add('hidden');
+  document.getElementById('empty-game').classList.remove('hidden');
+}
+
+// ── Classement ────────────────────────────────────────
+async function loadClassement() {
+  try {
+    const r = await fetch(`${API.stats}/statistiques/classement`);
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    renderClassement(data);
+  } catch(_) {
+    document.getElementById('classement-content').innerHTML =
+      '<div style="text-align:center;color:#bbb;padding:20px;font-size:.83rem;">Joue une partie d\'abord !</div>';
+  }
+}
+
+function renderClassement(data) {
+  if (!data.length) {
+    document.getElementById('classement-content').innerHTML =
+      '<div style="text-align:center;color:#bbb;padding:20px;font-size:.83rem;">Aucune partie jouée.</div>';
+    return;
+  }
+  const medals = ['🥇','🥈','🥉'];
+  document.getElementById('classement-content').innerHTML = data.map((p, i) => `
+    <div class="lb-item">
+      <div class="lb-rank">${medals[i] || (i+1)}</div>
+      <div class="lb-info">
+        <div class="lb-name">${p.pseudonyme}</div>
+        <div class="lb-sub">${p.totalParties} partie(s) · ${p.partiesGagnees} victoire(s)</div>
+      </div>
+      <div class="lb-rate" style="color:${p.tauxVictoire>=50?'var(--green)':'var(--red)'}">
+        ${p.tauxVictoire}%
+      </div>
+    </div>
+  `).join('');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+# docker-compose.dev.yml — Bases de données uniquement (développement local)
+# Usage : docker-compose -f docker-compose.dev.yml up -d
+# Puis lancez chaque service avec : mvn spring-boot:run
+
+version: '3.8'
+
+services:
+
+  postgres-joueur:
+    image: postgres:15
+    container_name: motus-postgres-joueur
+    environment:
+      POSTGRES_DB: joueur_db
+      POSTGRES_USER: motus
+      POSTGRES_PASSWORD: motus
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata-joueur:/var/lib/postgresql/data
+
+  postgres-dictionnaire:
+    image: postgres:15
+    container_name: motus-postgres-dictionnaire
+    environment:
+      POSTGRES_DB: dictionnaire_db
+      POSTGRES_USER: motus
+      POSTGRES_PASSWORD: motus
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata-dictionnaire:/var/lib/postgresql/data
+
+  postgres-partie:
+    image: postgres:15
+    container_name: motus-postgres-partie
+    environment:
+      POSTGRES_DB: partie_db
+      POSTGRES_USER: motus
+      POSTGRES_PASSWORD: motus
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata-partie:/var/lib/postgresql/data
+
+volumes:
+  pgdata-joueur:
+  pgdata-dictionnaire:
+  pgdata-partie:

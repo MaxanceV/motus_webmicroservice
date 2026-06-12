@@ -1,0 +1,162 @@
+# docker-compose.yml — Stack complète pour la démo
+# Prérequis : avoir buildé les jars avec "mvn package -DskipTests" dans chaque service
+# Usage : docker-compose up --build
+
+version: '3.8'
+
+services:
+
+  # ═══════════════════════════════════════
+  #  BASES DE DONNÉES
+  # ═══════════════════════════════════════
+
+  postgres-joueur:
+    image: postgres:15
+    container_name: motus-postgres-joueur
+    environment:
+      POSTGRES_DB: joueur_db
+      POSTGRES_USER: motus
+      POSTGRES_PASSWORD: motus
+    volumes:
+      - pgdata-joueur:/var/lib/postgresql/data
+    networks:
+      - motus-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U motus -d joueur_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-dictionnaire:
+    image: postgres:15
+    container_name: motus-postgres-dictionnaire
+    environment:
+      POSTGRES_DB: dictionnaire_db
+      POSTGRES_USER: motus
+      POSTGRES_PASSWORD: motus
+    volumes:
+      - pgdata-dictionnaire:/var/lib/postgresql/data
+    networks:
+      - motus-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U motus -d dictionnaire_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-partie:
+    image: postgres:15
+    container_name: motus-postgres-partie
+    environment:
+      POSTGRES_DB: partie_db
+      POSTGRES_USER: motus
+      POSTGRES_PASSWORD: motus
+    volumes:
+      - pgdata-partie:/var/lib/postgresql/data
+    networks:
+      - motus-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U motus -d partie_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ═══════════════════════════════════════
+  #  MICROSERVICES
+  # ═══════════════════════════════════════
+
+  joueur-service:
+    build: ./joueur-service
+    container_name: motus-joueur-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-joueur:5432/joueur_db
+      SPRING_DATASOURCE_USERNAME: motus
+      SPRING_DATASOURCE_PASSWORD: motus
+    depends_on:
+      postgres-joueur:
+        condition: service_healthy
+    networks:
+      - motus-network
+
+  dictionnaire-service:
+    build: ./dictionnaire-service
+    container_name: motus-dictionnaire-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-dictionnaire:5432/dictionnaire_db
+      SPRING_DATASOURCE_USERNAME: motus
+      SPRING_DATASOURCE_PASSWORD: motus
+    depends_on:
+      postgres-dictionnaire:
+        condition: service_healthy
+    networks:
+      - motus-network
+
+  partie-service:
+    build: ./partie-service
+    container_name: motus-partie-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-partie:5432/partie_db
+      SPRING_DATASOURCE_USERNAME: motus
+      SPRING_DATASOURCE_PASSWORD: motus
+      DICTIONNAIRE_SERVICE_URL: http://dictionnaire-service:8082
+      JOUEUR_SERVICE_URL: http://joueur-service:8081
+    depends_on:
+      postgres-partie:
+        condition: service_healthy
+      dictionnaire-service:
+        condition: service_started
+      joueur-service:
+        condition: service_started
+    networks:
+      - motus-network
+
+  statistiques-service:
+    build: ./statistiques-service
+    container_name: motus-statistiques-service
+    ports:
+      - "8084:8084"
+    environment:
+      PARTIE_SERVICE_URL: http://partie-service:8083
+      JOUEUR_SERVICE_URL: http://joueur-service:8081
+    depends_on:
+      - partie-service
+      - joueur-service
+    networks:
+      - motus-network
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: motus-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES_0_URI: http://joueur-service:8081
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES_1_URI: http://dictionnaire-service:8082
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES_2_URI: http://partie-service:8083
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES_3_URI: http://statistiques-service:8084
+    depends_on:
+      - joueur-service
+      - dictionnaire-service
+      - partie-service
+      - statistiques-service
+    networks:
+      - motus-network
+
+# ═══════════════════════════════════════
+#  RÉSEAU ET VOLUMES
+# ═══════════════════════════════════════
+
+networks:
+  motus-network:
+    driver: bridge
+
+volumes:
+  pgdata-joueur:
+  pgdata-dictionnaire:
+  pgdata-partie:
