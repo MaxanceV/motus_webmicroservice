@@ -273,8 +273,61 @@ hr { border: none; border-top: 2px solid var(--bg); margin: 16px 0; }
   border-radius: 4px;
 }
 
+/* ── Historique ── */
+.history-container {
+  max-width: 980px;
+  margin: 0 auto 36px;
+  padding: 0 20px;
+}
+.filters-row {
+  display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;
+  margin-bottom: 16px;
+}
+.filters-row .form-group { margin: 0; flex: 1; min-width: 140px; }
+.filters-row .btn { height: 42px; white-space: nowrap; }
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .88rem;
+}
+.history-table th {
+  text-align: left;
+  padding: 9px 12px;
+  font-size: .72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #888;
+  border-bottom: 2px solid var(--bg);
+}
+.history-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--bg);
+  vertical-align: middle;
+}
+.history-table tr:last-child td { border-bottom: none; }
+.history-table tr:hover td { background: #fafafa; }
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: .73rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.badge-gagnee  { background: #eafaf1; color: var(--green); }
+.badge-perdue  { background: #fdedec; color: var(--red); }
+.badge-encours { background: #fef9e7; color: #d68910; }
+
+.history-count {
+  font-size: .78rem; color: #aaa; margin-bottom: 10px;
+}
+
 @media (max-width: 720px) {
   .container { grid-template-columns: 1fr; }
+  .filters-row .form-group { min-width: 100%; }
 }
 </style>
 </head>
@@ -428,13 +481,61 @@ hr { border: none; border-top: 2px solid var(--bg); margin: 16px 0; }
   </div>
 </div>
 
+<!-- ═══ SECTION HISTORIQUE (plein largeur) ═══ -->
+<div class="history-container">
+  <div class="card">
+    <div class="card-title">
+      Historique des parties
+      <button class="btn btn-secondary btn-sm" onclick="loadHistorique()">↻ Actualiser</button>
+    </div>
+
+    <!-- Filtres -->
+    <div class="filters-row">
+      <div class="form-group">
+        <label>Joueur</label>
+        <select id="f-joueur" onchange="appliquerFiltres()">
+          <option value="">Tous les joueurs</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Statut</label>
+        <select id="f-statut" onchange="appliquerFiltres()">
+          <option value="">Tous</option>
+          <option value="EN_COURS">En cours</option>
+          <option value="GAGNEE">Gagnée</option>
+          <option value="PERDUE">Perdue</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date début (depuis)</label>
+        <input type="date" id="f-date-from" onchange="appliquerFiltres()">
+      </div>
+      <div class="form-group">
+        <label>Date début (jusqu'au)</label>
+        <input type="date" id="f-date-to" onchange="appliquerFiltres()">
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="resetFiltres()">✕ Réinitialiser</button>
+    </div>
+
+    <div class="history-count" id="history-count"></div>
+
+    <div id="historique-content">
+      <div style="text-align:center;color:#bbb;padding:30px;font-size:.85rem;">
+        Chargement de l'historique…
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── Config ──────────────────────────────────────────
+// Tout passe par la Gateway (port 8080) — ne plus appeler les services directement
+const GATEWAY = 'http://localhost:8080';
 const API = {
-  joueurs:      'http://localhost:8081',
-  dictionnaire: 'http://localhost:8082',
-  parties:      'http://localhost:8083',
-  stats:        'http://localhost:8084'
+  joueurs:      GATEWAY,
+  dictionnaire: GATEWAY,
+  parties:      GATEWAY,
+  stats:        GATEWAY
 };
 
 // ── State ────────────────────────────────────────────
@@ -638,11 +739,13 @@ async function valider() {
       document.getElementById('input-zone').classList.add('hidden');
       msg('game-msg', `🎉 Bravo ! Trouvé en ${tentative.numero} essai(s) !`, 'success');
       loadClassement();
+      loadHistorique();
     } else if (partie.statut === 'PERDUE') {
       document.getElementById('input-zone').classList.add('hidden');
       const solution = partie.motMystere ? ` C'était : ${partie.motMystere}` : '';
       msg('game-msg', `😞 Perdu !${solution}`, 'error');
       loadClassement();
+      loadHistorique();
     }
 
   } catch(e) {
@@ -693,6 +796,152 @@ function renderClassement(data) {
     </div>
   `).join('');
 }
+
+// ── Historique des parties ────────────────────────────
+let allParties  = [];   // données brutes chargées depuis le serveur
+let joueurMap   = {};   // { joueurId → pseudonyme }
+
+async function loadHistorique() {
+  try {
+    // Récupère toutes les parties et tous les joueurs en parallèle
+    const [rParties, rJoueurs] = await Promise.all([
+      fetch(`${API.parties}/parties`),
+      fetch(`${API.joueurs}/joueurs`)
+    ]);
+
+    allParties = rParties.ok ? await rParties.json() : [];
+    const joueurs = rJoueurs.ok ? await rJoueurs.json() : [];
+
+    // Construit un dictionnaire id → pseudo pour l'affichage
+    joueurMap = {};
+    joueurs.forEach(j => { joueurMap[j.id] = j.pseudonyme; });
+
+    // Peuple le select "Joueur" avec les joueurs distincts présents dans les parties
+    const joueurIds = [...new Set(allParties.map(p => p.joueurId))];
+    const sel = document.getElementById('f-joueur');
+    sel.innerHTML = '<option value="">Tous les joueurs</option>';
+    joueurIds.forEach(id => {
+      const opt = document.createElement('option');
+      opt.value = id;
+      opt.textContent = joueurMap[id] || ('Joueur #' + id);
+      sel.appendChild(opt);
+    });
+
+    appliquerFiltres();
+  } catch(e) {
+    document.getElementById('historique-content').innerHTML =
+      '<div style="text-align:center;color:#bbb;padding:30px;">Impossible de charger l\'historique.</div>';
+  }
+}
+
+function appliquerFiltres() {
+  const fJoueur = document.getElementById('f-joueur').value;
+  const fStatut = document.getElementById('f-statut').value;
+  const fFrom   = document.getElementById('f-date-from').value;  // "YYYY-MM-DD" ou ""
+  const fTo     = document.getElementById('f-date-to').value;
+
+  let filtered = allParties.filter(p => {
+    if (fJoueur && String(p.joueurId) !== fJoueur) return false;
+    if (fStatut && p.statut !== fStatut) return false;
+    if (fFrom) {
+      // dateDebut est au format ISO (ex: "2026-06-15T14:23:00")
+      const d = p.dateDebut ? p.dateDebut.substring(0, 10) : '';
+      if (d < fFrom) return false;
+    }
+    if (fTo) {
+      const d = p.dateDebut ? p.dateDebut.substring(0, 10) : '';
+      if (d > fTo) return false;
+    }
+    return true;
+  });
+
+  // Tri par date décroissante (parties les plus récentes en premier)
+  filtered.sort((a, b) => (b.dateDebut || '').localeCompare(a.dateDebut || ''));
+
+  const count = document.getElementById('history-count');
+  count.textContent = filtered.length
+    ? `${filtered.length} partie(s) affichée(s) sur ${allParties.length}`
+    : '';
+
+  renderHistorique(filtered);
+}
+
+function resetFiltres() {
+  document.getElementById('f-joueur').value    = '';
+  document.getElementById('f-statut').value    = '';
+  document.getElementById('f-date-from').value = '';
+  document.getElementById('f-date-to').value   = '';
+  appliquerFiltres();
+}
+
+function renderHistorique(parties) {
+  const el = document.getElementById('historique-content');
+
+  if (!parties.length) {
+    el.innerHTML = '<div style="text-align:center;color:#bbb;padding:30px;font-size:.85rem;">Aucune partie ne correspond aux filtres.</div>';
+    return;
+  }
+
+  const rows = parties.map(p => {
+    const pseudo  = joueurMap[p.joueurId] || ('Joueur #' + p.joueurId);
+    const date    = p.dateDebut ? formatDate(p.dateDebut) : '—';
+    const essais  = p.tentatives ? `${p.tentatives.length} / ${p.nombreEssaisMax}` : `— / ${p.nombreEssaisMax}`;
+    const duree   = (p.dateFin && p.dateDebut) ? formatDuree(p.dateDebut, p.dateFin) : '—';
+    const badge   = badgeStatut(p.statut);
+
+    return `
+      <tr>
+        <td style="color:#bbb;font-size:.8rem;">#${p.id}</td>
+        <td><strong>${escHtml(pseudo)}</strong></td>
+        <td>${badge}</td>
+        <td>${date}</td>
+        <td style="text-align:center;">${essais}</td>
+        <td style="color:#999;">${duree}</td>
+      </tr>`;
+  }).join('');
+
+  el.innerHTML = `
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Joueur</th>
+          <th>Statut</th>
+          <th>Date</th>
+          <th style="text-align:center;">Essais</th>
+          <th>Durée</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function badgeStatut(statut) {
+  if (statut === 'GAGNEE')   return '<span class="badge badge-gagnee">✔ Gagnée</span>';
+  if (statut === 'PERDUE')   return '<span class="badge badge-perdue">✘ Perdue</span>';
+  return '<span class="badge badge-encours">⏳ En cours</span>';
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' })
+       + ' ' + d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+}
+
+function formatDuree(from, to) {
+  const diff = Math.round((new Date(to) - new Date(from)) / 1000);
+  if (diff < 60)   return diff + 's';
+  if (diff < 3600) return Math.floor(diff/60) + 'min ' + (diff%60) + 's';
+  return Math.floor(diff/3600) + 'h ' + Math.floor((diff%3600)/60) + 'min';
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Chargement initial de l'historique au démarrage
+loadHistorique();
 </script>
 </body>
 </html>

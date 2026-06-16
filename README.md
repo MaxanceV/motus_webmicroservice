@@ -54,7 +54,7 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 ### Ce que fait le script
 
-4 fenêtres `cmd` s'ouvrent, une par service :
+5 fenêtres `cmd` s'ouvrent, une par service :
 
 | Fenêtre | Service | Port |
 |---------|---------|------|
@@ -62,6 +62,7 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 | `[8081] joueur-service` | Joueurs | 8081 |
 | `[8083] partie-service` | Logique du jeu | 8083 |
 | `[8084] statistiques-service` | Stats | 8084 |
+| `[8080] api-gateway` | Point d'entrée unique | 8080 |
 
 **Attends que chaque fenêtre affiche :**
 ```
@@ -97,23 +98,23 @@ La **première lettre** du mot mystère est toujours affichée.
 ## Tester via API (optionnel)
 
 ```bash
-# Créer un joueur
-curl -X POST http://localhost:8081/joueurs \
+# Créer un joueur (via Gateway)
+curl -X POST http://localhost:8080/joueurs \
   -H "Content-Type: application/json" \
   -d '{"pseudonyme":"Ferdinand","email":"ferd@test.fr","motDePasse":"1234"}'
 
 # Lancer une partie (mot de 6 lettres)
-curl -X POST http://localhost:8083/parties \
+curl -X POST http://localhost:8080/parties \
   -H "Content-Type: application/json" \
   -d '{"joueurId":1,"longueurMot":6}'
 
 # Soumettre un essai
-curl -X POST http://localhost:8083/parties/1/tentatives \
+curl -X POST http://localhost:8080/parties/1/tentatives \
   -H "Content-Type: application/json" \
   -d '{"mot":"MAISON"}'
 
 # Voir le classement
-curl http://localhost:8084/classement
+curl http://localhost:8080/statistiques/classement
 ```
 
 ---
@@ -195,8 +196,9 @@ api-gateway      :8080  (Spring Cloud Gateway)
 ### statistiques-service (8084)
 | Méthode | URL | |
 |---------|-----|-|
-| GET | `/stats/{joueurId}` | stats d'un joueur |
-| GET | `/classement` | classement global |
+| GET | `/statistiques/joueur/{joueurId}` | stats d'un joueur |
+| GET | `/statistiques/classement` | classement global |
+| GET | `/statistiques/parties` | toutes les parties (admin) |
 
 ---
 

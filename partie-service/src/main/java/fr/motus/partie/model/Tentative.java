@@ -26,11 +26,18 @@ public class Tentative {
     private String motPropose;
     private LocalDateTime dateHeure;
 
+    // @JsonBackReference : côté "enfant" de la relation bidirectionnelle.
+    // Ce champ (partie) sera ignoré lors de la sérialisation JSON pour casser
+    // la boucle Tentative -> Partie -> Tentative -> ...
+    // FetchType.LAZY = la partie n'est chargée en base que si on y accède vraiment
+    // (optimisation — évite un SELECT inutile à chaque chargement de tentative).
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "partie_id")
     @JsonBackReference
     private Partie partie;
 
+    // FetchType.EAGER ici : les résultats lettre par lettre sont toujours chargés
+    // avec la tentative — c'est ce qu'on veut puisqu'on les affiche toujours ensemble.
     @OneToMany(mappedBy = "tentative", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<ResultatLettre> resultats = new ArrayList<>();

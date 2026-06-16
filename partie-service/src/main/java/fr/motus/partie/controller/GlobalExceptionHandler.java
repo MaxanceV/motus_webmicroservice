@@ -7,6 +7,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Map;
 
+// @RestControllerAdvice : intercepte les exceptions levées dans TOUS les @RestController
+// du service, sans avoir à écrire de try/catch dans chaque méthode.
+// Principe : si une RuntimeException bubble jusqu'ici, on renvoie un 400 avec un JSON
+// { "error": "message" } au lieu d'une stack trace HTML (qui serait incompréhensible pour le client).
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 

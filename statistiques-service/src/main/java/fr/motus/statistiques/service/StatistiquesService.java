@@ -26,6 +26,10 @@ public class StatistiquesService {
 
     /** Récupère toutes les parties depuis partie-service */
     public List<PartieDTO> getAllParties() {
+        // ParameterizedTypeReference est nécessaire pour désérialiser une List<PartieDTO>.
+        // Sans ça, Java "efface" le type générique à l'exécution (type erasure) et
+        // RestClient ne saurait pas dans quoi convertir le JSON.
+        // En gros : on lui dit explicitement "c'est une List<PartieDTO>".
         return partieClient.get()
                 .uri("/parties")
                 .retrieve()
@@ -46,6 +50,7 @@ public class StatistiquesService {
 
         long gagnees = parties.stream().filter(p -> "GAGNEE".equals(p.getStatut())).count();
         long perdues = parties.stream().filter(p -> "PERDUE".equals(p.getStatut())).count();
+        // Taux de victoire en % arrondi à 1 décimale
         double taux = parties.isEmpty() ? 0 : (double) gagnees / parties.size() * 100;
 
         return new StatJoueurDTO(
@@ -58,11 +63,13 @@ public class StatistiquesService {
         );
     }
 
-    /** Classement global : joueurs triés par taux de victoire */
+    /** Classement global : joueurs triés par taux de victoire décroissant */
     public List<StatJoueurDTO> getClassement() {
         List<PartieDTO> parties = getAllParties();
 
-        // Grouper les parties par joueurId
+        // Collectors.groupingBy regroupe les parties par joueurId dans une Map.
+        // Résultat : { 1L -> [partie1, partie2], 2L -> [partie3], ... }
+        // C'est l'équivalent d'un GROUP BY SQL, mais en Java Stream.
         Map<Long, List<PartieDTO>> parJoueur = parties.stream()
                 .collect(Collectors.groupingBy(PartieDTO::getJoueurId));
 
@@ -72,7 +79,9 @@ public class StatistiquesService {
             Long joueurId = entry.getKey();
             List<PartieDTO> partiesJoueur = entry.getValue();
 
-            // Récupérer le pseudo du joueur
+            // On récupère le pseudo via joueur-service pour chaque joueur distinct.
+            // Note : si joueur-service est down, on met un nom de secours — le try/catch
+            // évite que tout le classement plante à cause d'un seul joueur introuvable.
             String pseudo;
             try {
                 JoueurDTO joueur = joueurClient.get()
@@ -95,7 +104,7 @@ public class StatistiquesService {
             ));
         }
 
-        // Trier par taux de victoire décroissant
+        // Tri par taux de victoire décroissant (.reversed() inverse l'ordre naturel)
         classement.sort(Comparator.comparingDouble(StatJoueurDTO::getTauxVictoire).reversed());
         return classement;
     }

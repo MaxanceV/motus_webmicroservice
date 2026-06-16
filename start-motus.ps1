@@ -50,8 +50,14 @@ Start-Sleep -Seconds 30
 
 # 5. statistiques-service
 Write-Host ""
-Write-Host "  [5/5] statistiques-service (port 8084)..." -ForegroundColor Cyan
+Write-Host "  [5/6] statistiques-service (port 8084)..." -ForegroundColor Cyan
 StartService "statistiques-service" "8084" "$BASE\statistiques-service"
+Start-Sleep -Seconds 20
+
+# 6. api-gateway (point d'entree unique)
+Write-Host ""
+Write-Host "  [6/6] api-gateway (port 8080)..." -ForegroundColor Cyan
+StartService "api-gateway" "8080" "$BASE\api-gateway"
 
 # Resume
 Write-Host ""
@@ -59,10 +65,11 @@ Write-Host "  =============================================" -ForegroundColor Gr
 Write-Host "   Tout est lance !" -ForegroundColor Green
 Write-Host "  =============================================" -ForegroundColor Green
 Write-Host ""
-Write-Host "   joueur-service       -> http://localhost:8081"
-Write-Host "   dictionnaire-service -> http://localhost:8082"
-Write-Host "   partie-service       -> http://localhost:8083"
-Write-Host "   statistiques-service -> http://localhost:8084"
+Write-Host "   Gateway (point d'entree) -> http://localhost:8080" -ForegroundColor Yellow
+Write-Host "   joueur-service           -> http://localhost:8081"
+Write-Host "   dictionnaire-service     -> http://localhost:8082"
+Write-Host "   partie-service           -> http://localhost:8083"
+Write-Host "   statistiques-service     -> http://localhost:8084"
 Write-Host ""
 Write-Host "   Frontend : ouvre frontend/index.html dans ton navigateur" -ForegroundColor Cyan
 Write-Host ""

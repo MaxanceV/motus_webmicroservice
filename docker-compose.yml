@@ -136,10 +136,10 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_CLOUD_GATEWAY_MVC_ROUTES_0_URI: http://joueur-service:8081
-      SPRING_CLOUD_GATEWAY_MVC_ROUTES_1_URI: http://dictionnaire-service:8082
-      SPRING_CLOUD_GATEWAY_MVC_ROUTES_2_URI: http://partie-service:8083
-      SPRING_CLOUD_GATEWAY_MVC_ROUTES_3_URI: http://statistiques-service:8084
+      JOUEUR_SERVICE_URL: http://joueur-service:8081
+      DICTIONNAIRE_SERVICE_URL: http://dictionnaire-service:8082
+      PARTIE_SERVICE_URL: http://partie-service:8083
+      STATISTIQUES_SERVICE_URL: http://statistiques-service:8084
     depends_on:
       - joueur-service
       - dictionnaire-service

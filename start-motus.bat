@@ -35,18 +35,24 @@ start "[8083] partie-service" /d "%BASE%\partie-service" cmd /k "mvn spring-boot
 timeout /t 30 /nobreak >nul
 
 REM 5. statistiques-service
-echo  [5/5] statistiques-service (port 8084)...
+echo  [5/6] statistiques-service (port 8084)...
 start "[8084] statistiques-service" /d "%BASE%\statistiques-service" cmd /k "mvn spring-boot:run"
+timeout /t 20 /nobreak >nul
+
+REM 6. api-gateway (point d'entree unique sur :8080)
+echo  [6/6] api-gateway (port 8080)...
+start "[8080] api-gateway" /d "%BASE%\api-gateway" cmd /k "mvn spring-boot:run"
 
 echo.
 echo  =============================================
 echo   Tout est lance !
 echo  =============================================
 echo.
-echo   joueur-service       -^> http://localhost:8081
-echo   dictionnaire-service -^> http://localhost:8082
-echo   partie-service       -^> http://localhost:8083
-echo   statistiques-service -^> http://localhost:8084
+echo   Gateway (point d'entree) -^> http://localhost:8080
+echo   joueur-service           -^> http://localhost:8081
+echo   dictionnaire-service     -^> http://localhost:8082
+echo   partie-service           -^> http://localhost:8083
+echo   statistiques-service     -^> http://localhost:8084
 echo.
 echo   Frontend : ouvre frontend/index.html dans ton navigateur
 echo.

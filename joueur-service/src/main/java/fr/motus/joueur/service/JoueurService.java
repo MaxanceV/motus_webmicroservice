@@ -3,6 +3,7 @@ package fr.motus.joueur.service;
 import fr.motus.joueur.model.Joueur;
 import fr.motus.joueur.repository.JoueurRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 public class JoueurService {
 
     private final JoueurRepository repo;
+    private final PasswordEncoder passwordEncoder;
 
     public List<Joueur> findAll() {
         return repo.findAll();
@@ -31,6 +33,8 @@ public class JoueurService {
         if (repo.existsByEmail(joueur.getEmail())) {
             throw new RuntimeException("Email déjà utilisé : " + joueur.getEmail());
         }
+        // Hashage BCrypt avant persistance
+        joueur.setMotDePasse(passwordEncoder.encode(joueur.getMotDePasse()));
         return repo.save(joueur);
     }
 
@@ -38,7 +42,7 @@ public class JoueurService {
         Joueur joueur = findById(id);
         joueur.setPseudonyme(updates.getPseudonyme());
         if (updates.getMotDePasse() != null && !updates.getMotDePasse().isBlank()) {
-            joueur.setMotDePasse(updates.getMotDePasse());
+            joueur.setMotDePasse(passwordEncoder.encode(updates.getMotDePasse()));
         }
         return repo.save(joueur);
     }

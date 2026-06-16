@@ -1,5 +1,6 @@
 package fr.motus.partie.controller;
 
+import fr.motus.partie.dto.PartieResponseDTO;
 import fr.motus.partie.model.Partie;
 import fr.motus.partie.model.Tentative;
 import fr.motus.partie.service.PartieService;
@@ -20,20 +21,20 @@ public class PartieController {
 
     /** Lister toutes les parties (admin) */
     @GetMapping
-    public List<Partie> getAll() {
-        return service.findAll();
+    public List<PartieResponseDTO> getAll() {
+        return service.findAll().stream().map(PartieResponseDTO::new).toList();
     }
 
     /** Récupérer une partie par id */
     @GetMapping("/{id}")
-    public Partie getById(@PathVariable Long id) {
-        return service.findById(id);
+    public PartieResponseDTO getById(@PathVariable Long id) {
+        return new PartieResponseDTO(service.findById(id));
     }
 
     /** Historique des parties d'un joueur */
     @GetMapping("/joueur/{joueurId}")
-    public List<Partie> getByJoueur(@PathVariable Long joueurId) {
-        return service.findByJoueur(joueurId);
+    public List<PartieResponseDTO> getByJoueur(@PathVariable Long joueurId) {
+        return service.findByJoueur(joueurId).stream().map(PartieResponseDTO::new).toList();
     }
 
     /** Lister les tentatives d'une partie */
@@ -58,12 +59,12 @@ public class PartieController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Partie nouvellePartie(@RequestBody Map<String, Object> body) {
+    public PartieResponseDTO nouvellePartie(@RequestBody Map<String, Object> body) {
         Long joueurId = Long.valueOf(body.get("joueurId").toString());
         int longueur = body.containsKey("longueurMot")
                 ? Integer.parseInt(body.get("longueurMot").toString())
                 : 6;
-        return service.nouvellePartie(joueurId, longueur);
+        return new PartieResponseDTO(service.nouvellePartie(joueurId, longueur));
     }
 
     /**

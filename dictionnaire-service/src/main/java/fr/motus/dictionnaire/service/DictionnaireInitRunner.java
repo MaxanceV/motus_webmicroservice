@@ -9,9 +9,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 /**
- * Au démarrage, si le dictionnaire a moins de 50 mots,
- * tente de le compléter depuis une liste publique en ligne.
- * En cas d'échec réseau, le data.sql local prend le relais.
+ * Initialisation du dictionnaire au démarrage de l'application.
+ *
+ * ApplicationRunner est une interface Spring Boot : la méthode run() est appelée
+ * automatiquement juste après que le contexte Spring soit complètement chargé.
+ * C'est utile pour du code d'initialisation qui a besoin des beans (repo, services...)
+ * et qui doit tourner une seule fois au lancement — ici, vérifier que le dico est rempli.
+ *
+ * Stratégie de fallback à deux niveaux :
+ *   1. Si la base a déjà ≥ 50 mots (chargés par data.sql) → rien à faire
+ *   2. Sinon → tentative de chargement depuis GitHub
+ *   3. En cas d'échec réseau → on continue avec le dictionnaire local uniquement
  */
 @Component
 @RequiredArgsConstructor
@@ -26,6 +34,7 @@ public class DictionnaireInitRunner implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         long count = repo.count();
         if (count >= 50) {
+            // data.sql a déjà été chargé par Spring Boot au démarrage → rien à faire
             System.out.println("📖 Dictionnaire OK — " + count + " mots en base.");
             return;
         }
@@ -49,7 +58,8 @@ public class DictionnaireInitRunner implements ApplicationRunner {
 
             for (String line : lines) {
                 String mot = line.trim().toUpperCase();
-                // Garder uniquement les mots de 5 à 7 lettres, sans accents ni caractères spéciaux
+                // Regex [A-Z]{5,7} : uniquement des lettres majuscules sans accents, 5 à 7 caractères.
+                // existsByValeurIgnoreCase évite les doublons si on relance le runner (idempotence).
                 if (mot.matches("[A-Z]{5,7}") && !repo.existsByValeurIgnoreCase(mot)) {
                     Mot m = new Mot();
                     m.setValeur(mot);
