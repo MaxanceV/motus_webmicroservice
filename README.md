@@ -16,8 +16,7 @@
 
 ---
 
-## Cloner le projet (Ferdinand — première fois)
-
+## Cloner le projet
 ```bash
 git clone <url-du-repo>
 cd motus_webmicroservice
