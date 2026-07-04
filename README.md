@@ -1,7 +1,7 @@
-# Motus — Projet Web Microservices (MIAGE M2)
+# Motus - Projet Web Microservices (MIAGE M2)
 
-**Binôme :** Maxance & Ferdinand Martin Lavigne  
-**Cours :** M. Menceur — Architecture Web & Microservices
+**Binôme :** Maxance Villame & Ferdinand Martin Lavigne  
+**Cours :** M. Menceur, Architecture Web & Microservices
 
 ---
 
@@ -26,25 +26,25 @@ cd motus_webmicroservice
 
 ## Lancer le projet
 
-### Étape 1 — Ouvre Docker Desktop
+### Étape 1 : Ouvre Docker Desktop
 
-Lance **Docker Desktop** et attends que l'icône soit stable dans la barre des tâches. C'est tout ce qu'il y a à faire avec Docker — ne ferme pas Docker, ne tape rien dedans.
+Lance **Docker Desktop** et attends que l'icône soit stable dans la barre des tâches. C'est tout ce qu'il y a à faire avec Docker : ne ferme pas Docker, ne tape rien dedans.
 
 > Si Docker tourne déjà, pas besoin de le redémarrer. Le script est idempotent.
 
-### Étape 2 — Lance le script
+### Étape 2 : Lance le script
 
 **Choisis UNE des méthodes selon d'où tu viens :**
 
-#### ✅ Méthode A — Double-clic (recommandé, aucun terminal requis)
+#### ✅ Méthode A : Double-clic (recommandé, aucun terminal requis)
 Double-clique sur `start-motus.bat` dans l'explorateur Windows. Pur CMD, pas besoin de PowerShell.
 
-#### ✅ Méthode B — Git Bash ou CMD
+#### ✅ Méthode B : Git Bash ou CMD
 ```bash
 start-motus.bat
 ```
 
-#### ✅ Méthode C — PowerShell
+#### ✅ Méthode C : PowerShell
 Ouvre PowerShell dans le dossier du projet (clic droit → "Ouvrir dans Terminal"), puis :
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
@@ -69,11 +69,11 @@ Started XxxServiceApplication in X.XXX seconds
 ```
 ⏱️ Durée : ~2 min. La première fois (Maven télécharge tout) : ~5 min.
 
-### Étape 3 — Ouvre le site
+### Étape 3 : Ouvre le site
 
 Double-clique sur `frontend/index.html` dans l'explorateur Windows (ou glisse-le dans Chrome/Firefox).
 
-Le jeu s'affiche directement — pas de serveur web nécessaire.
+Le jeu s'affiche directement : pas de serveur web nécessaire.
 
 ---
 
